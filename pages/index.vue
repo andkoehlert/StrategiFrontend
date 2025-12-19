@@ -74,6 +74,8 @@
             <MonthlyBarChart 
               :monthlyData="selectedYearMonthlyData"
               :year="selectedYear"
+               :yearData="selectedYearQuarterlyData"
+                  type="actual"
             />
           </div>
         </div>

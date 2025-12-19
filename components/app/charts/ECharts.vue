@@ -35,9 +35,20 @@ const handleResize = () => {
 }
 
 // Watch for option changes
-watch(() => props.option, (newOption) => {
-  chartInstance?.setOption(newOption, true)
-}, { deep: true })
+watch(
+  () => props.option,
+  (newOption) => {
+    if (!chartInstance || !newOption) return
+
+    chartInstance.clear() 
+    chartInstance.setOption(newOption, {
+      notMerge: true,
+      lazyUpdate: false
+    })
+  },
+  { deep: true,  immediate: true  }
+  
+)
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)

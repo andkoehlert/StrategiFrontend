@@ -1,151 +1,249 @@
 <template>
-  <div class="w-full h-full min-h-[300px]">
-    <div v-if="!monthlyData" class="flex items-center justify-center h-full text-gray-400">
-      No monthly data available for {{ year }}
+  <div class="w-full h-full min-h-[420px]">
+    <!-- Toggle -->
+    <div class="flex justify-center mb-4 gap-2">
+      <button
+        class="px-4 py-1.5 rounded text-sm transition"
+        :class="mode === 'month' ? activeBtn : inactiveBtn"
+        @click="mode = 'month'"
+      >
+        Monthly
+      </button>
+
+      <button
+        class="px-4 py-1.5 rounded text-sm transition"
+        :class="mode === 'quarter' ? activeBtn : inactiveBtn"
+        @click="mode = 'quarter'"
+      >
+        Quarterly
+      </button>
     </div>
-    <ECharts 
-      v-else
-      :option="chartOption" 
-      width="100%" 
-      height="100%" 
-    />
+
+    <!-- Chart -->
+    <div class="w-full h-[380px]">
+    <ECharts
+  v-if="chartOption"
+  :key="mode"
+  :option="chartOption"
+  width="100%"
+  height="100%"
+/>
+
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import ECharts from '~/components/app/charts/ECharts.vue'
 import type { ProcessedMonthlyData } from '~/interfaces/monthly'
+import type { ProcessedYearData } from '~/interfaces/quarterly'
 
+/* ----------------------------------
+   Props
+---------------------------------- */
 interface Props {
   monthlyData: ProcessedMonthlyData | null
+  yearData: ProcessedYearData | null
   year: number
-  title?: string
 }
 
 const props = defineProps<Props>()
 
-const chartOption = computed(() => {
-  if (!props.monthlyData?.months || props.monthlyData.months.length === 0) return {}
+/* ----------------------------------
+   Toggle state
+---------------------------------- */
+const mode = ref<'month' | 'quarter'>('month')
 
-  const months = props.monthlyData.months.map(d => d.month)
-  const afregnet = props.monthlyData.months.map(d => d.afregnet)
-  const ditMaal = props.monthlyData.months.map(d => d.ditMaal)
+/* ----------------------------------
+   Button styles
+---------------------------------- */
+const activeBtn =
+  'bg-[#f0cb8b] text-black font-semibold shadow'
+const inactiveBtn =
+  'bg-[#175381] text-white opacity-70 hover:opacity-100'
+
+/* ----------------------------------
+   MONTHLY (Bar chart)
+---------------------------------- */
+const monthlyOption = computed(() => {
+  if (!props.monthlyData?.months?.length) return null
+
+  const months = props.monthlyData.months.map(m => m.month)
+  const afregnet = props.monthlyData.months.map(m => m.afregnet)
+  const ditMaal = props.monthlyData.months.map(m => m.ditMaal)
 
   return {
+    backgroundColor: 'transparent',
+    animationDuration: 600,
+
     title: {
-      text: props.title || ` ${props.year}`,
+      text: `Monthly – ${props.year}`,
       left: 'center',
-      textStyle: { 
-        color: '#fff', 
-        fontSize: 18, 
-        fontWeight: 'bold',
-        lineHeight: 28 
+      textStyle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold'
       }
     },
-    backgroundColor: 'transparent',
+
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(13, 58, 92, 0.95)',
       borderColor: '#91cc75',
       borderWidth: 1,
-      textStyle: {
-        color: '#fff',
-        fontSize: 12
-      },
-      formatter: (params: any) => {
-        let result = `<strong>${params[0].axisValue}</strong><br/>`
-        params.forEach((param: any) => {
-          const value = param.data.toLocaleString('da-DK')
-          result += `${param.marker} ${param.seriesName}: ${value} DKK<br/>`
-        })
-        
-        // Calculate percentage
-        if (params.length === 2) {
-          const actual = params[0].data
-          const goal = params[1].data
-          const percentage = goal > 0 ? ((actual / goal) * 100).toFixed(1) : 0
-          result += `<br/>Achievement: ${percentage}%`
-        }
-        
-        return result
-      }
+      textStyle: { color: '#fff' }
     },
+
     legend: {
       data: ['Afregnet', 'Dit Mål'],
-      top: 50,
-      textStyle: {
-        color: '#fff',
-        fontSize: 12
-      }
+      top: 40,
+      textStyle: { color: '#fff' }
     },
+
     grid: {
+      top: 90,
       left: '3%',
       right: '4%',
       bottom: '3%',
-      top: 80,
       containLabel: true
     },
+
     xAxis: {
       type: 'category',
       data: months,
-      axisLabel: {
-        color: '#fff',
-        fontSize: 11
-      },
-      axisLine: {
-        lineStyle: { color: '#fff' }
-      }
+      axisLabel: { color: '#fff' },
+      axisLine: { lineStyle: { color: '#fff' } }
     },
+
     yAxis: {
       type: 'value',
       axisLabel: {
         color: '#fff',
-        fontSize: 11,
-        formatter: (value: number) => {
-          if (value >= 1000) {
-            return (value / 1000) + 'k'
-          }
-          return value.toLocaleString('da-DK')
-        }
-      },
-      axisLine: {
-        lineStyle: { color: '#fff' }
+        formatter: (v: number) =>
+          v >= 1000 ? `${v / 1000}k` : v.toLocaleString('da-DK')
       },
       splitLine: {
-        lineStyle: { 
-          color: 'rgba(255,255,255,0.1)' 
-        }
+        lineStyle: { color: 'rgba(255,255,255,0.1)' }
       }
     },
+
     series: [
       {
         name: 'Afregnet',
         type: 'bar',
         data: afregnet,
+        barWidth: '40%',
         itemStyle: {
           color: '#f0cb8b',
           borderRadius: [4, 4, 0, 0]
-        },
-        label: {
-          show: false
-        },
-        barWidth: '40%'
+        }
       },
       {
         name: 'Dit Mål',
         type: 'bar',
         data: ditMaal,
+        barWidth: '40%',
         itemStyle: {
           color: '#cfae76',
           borderRadius: [4, 4, 0, 0]
-        },
-        label: {
-          show: false
-        },
-        barWidth: '40%'
+        }
       }
     ]
   }
 })
+
+/* ----------------------------------
+   QUARTERLY (Pie chart)
+---------------------------------- */
+const quarterlyOption = computed(() => {
+  if (!props.yearData?.quarterly) return null
+
+  const { quarterly, totals } = props.yearData
+
+  const percent = (v: number) =>
+    totals.combined ? Math.round((v / totals.combined) * 100) : 0
+
+  return {
+    backgroundColor: 'transparent',
+    animationDuration: 600,
+
+    title: {
+      text: `Quarterly – ${props.year}`,
+      left: 'center',
+      textStyle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold'
+      }
+    },
+
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(13, 58, 92, 0.95)',
+      borderColor: '#91cc75',
+      borderWidth: 1,
+      textStyle: { color: '#fff' },
+      formatter: (params: any) => {
+        const q = quarterly[params.name as keyof typeof quarterly]
+        if (!q) return ''
+
+        let months = '<br/><br/><strong>Months:</strong><br/>'
+        Object.entries(q.months).forEach(([m, v]) => {
+          months += `${m}: ${v.toLocaleString('da-DK')} DKK<br/>`
+        })
+
+        return `
+          <strong>${params.name}</strong><br/>
+          Total: ${params.value.toLocaleString('da-DK')} DKK<br/>
+          Percentage: ${params.data.percentage}%${months}
+        `
+      }
+    },
+
+    legend: {
+      bottom: 10,
+      textStyle: { color: '#fff' }
+    },
+
+    color: ['#f0cb8b', '#e2ae60', '#d9a253', '#cfae76'],
+
+    series: [
+      {
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['50%', '55%'],
+        data: [
+          { name: 'Q1', value: quarterly.Q1.total, percentage: percent(quarterly.Q1.total) },
+          { name: 'Q2', value: quarterly.Q2.total, percentage: percent(quarterly.Q2.total) },
+          { name: 'Q3', value: quarterly.Q3.total, percentage: percent(quarterly.Q3.total) },
+          { name: 'Q4', value: quarterly.Q4.total, percentage: percent(quarterly.Q4.total) }
+        ],
+        label: {
+          color: '#fff',
+          formatter: '{b}\n{d}%'
+        },
+        itemStyle: {
+          borderColor: '#175381',
+          borderWidth: 2
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 12,
+            shadowColor: 'rgba(0,0,0,0.5)'
+          }
+        }
+      }
+    ]
+  }
+})
+
+/* ----------------------------------
+   ACTIVE OPTION
+---------------------------------- */
+const chartOption = computed(() =>
+  mode.value === 'month'
+    ? monthlyOption.value
+    : quarterlyOption.value
+)
 </script>
