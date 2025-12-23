@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   },
     runtimeConfig: {
   public: {
-    apiBase: "https://specifikation.dev.kirklarsen.dk"
+    apiBase: "https://specifikation.api.kirklarsen.dk"
   }
 },
   modules: [
