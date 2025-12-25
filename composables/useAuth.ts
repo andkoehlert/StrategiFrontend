@@ -15,7 +15,7 @@ interface LoginResponse {
   }
 }
 
-const API_BASE_URL = 'https://mongo-api-2025.onrender.com/api/'
+const API_BASE_URL = 'https://mongo-api-2025.onrender.com'
 
 const currentUser = ref<User | null>(null)
 const authToken = ref<string | null>(null)
