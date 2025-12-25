@@ -1,70 +1,117 @@
 import { ref, computed } from 'vue'
-import type {User} from '../interfaces/user'
 
-const MOCK_USERS: User[] = [
-  { initials: 'kw', name: 'Kristian', email: 'kw@lawfirm.dk' },
-  { initials: 'jk', name: 'Jens', email: 'Jens@lawfirm.dk' },
-]
+interface User {
+  id: string
+  name: string
+  email: string
+  initials: string
+}
+
+interface LoginResponse {
+  error: string | null
+  data: {
+    userId: string
+    token: string
+  }
+}
+
+const API_BASE_URL = 'http://localhost:4000'
 
 const currentUser = ref<User | null>(null)
-const isAuthenticated = computed(() => currentUser.value !== null)
+const authToken = ref<string | null>(null)
 
 export const useAuth = () => {
- 
-  const login = (initials: string): boolean => {
-    const user = MOCK_USERS.find(u => u.initials.toLowerCase() === initials.toLowerCase())
-    
-    if (user) {
-      currentUser.value = user
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('mockUser', JSON.stringify(user))
-      }
-      return true
+  const isAuthenticated = computed(() => !!authToken.value)
+
+  // Initialize auth from localStorage
+  const initializeAuth = () => {
+    if (!process.client) return
+
+    const token = localStorage.getItem('authToken')
+    const user = localStorage.getItem('currentUser')
+
+    if (token && user) {
+      authToken.value = token
+      currentUser.value = JSON.parse(user)
     }
-    
-    return false
   }
 
+  // Login with backend API
+  const loginWithBackend = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
 
+      const data: LoginResponse = await response.json()
+
+      if (!response.ok || !data.data) {
+        return { success: false, error: data.error || 'Login failed' }
+      }
+
+      authToken.value = data.data.token
+
+      // Decode JWT payload (display only)
+      const tokenPayload = JSON.parse(
+        atob(data.data.token.split('.')[1])
+      )
+
+      currentUser.value = {
+        id: data.data.userId,
+        name: tokenPayload.name,
+        email: tokenPayload.email,
+        initials: tokenPayload.name
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase(),
+      }
+
+      if (process.client) {
+        localStorage.setItem('authToken', authToken.value)
+        localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+      }
+
+      return { success: true }
+    } catch (error) {
+      console.error('Login error:', error)
+      return { success: false, error: 'Network error. Please try again.' }
+    }
+  }
+
+ 
   const logout = () => {
     currentUser.value = null
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('mockUser')
+    authToken.value = null
+
+    if (process.client) {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('currentUser')
     }
   }
 
-
-  const initializeAuth = () => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('mockUser')
-      if (stored) {
-        try {
-          currentUser.value = JSON.parse(stored)
-        } catch (e) {
-          console.error('Failed to parse stored user:', e)
-          sessionStorage.removeItem('mockUser')
-        }
-      }
-    }
-  }
-
- 
-  const getUserInitials = (): string | null => {
-    return currentUser.value?.initials || null
-  }
-
- 
-  const getAvailableUsers = (): User[] => {
-    return MOCK_USERS
-  }
+  const getCurrentUser = () => currentUser.value
+  const getUserInitials = () => currentUser.value?.initials || null
+  const getToken = () => authToken.value
 
   return {
-    currentUser: computed(() => currentUser.value),
+    // state
+    currentUser,
     isAuthenticated,
-    login,
-    logout,
+
+    // actions
     initializeAuth,
+    loginWithBackend,
+    logout,
+
+    // helpers
+    getCurrentUser,
     getUserInitials,
-    getAvailableUsers,
+    getToken,
   }
 }

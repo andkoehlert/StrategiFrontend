@@ -27,7 +27,7 @@ export const useCalendarData = () => {
       const config = useRuntimeConfig()
          
       const url =  
-         `${config.public.apiBase}/mock/targets/targets/${initials}/calendar`
+         `${config.public.apiBase}/api/daily-data/2024`
 
       console.log('Fetching calendar data from:', url)
       

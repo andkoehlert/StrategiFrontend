@@ -20,8 +20,8 @@ export const useQuarterlyData = () => {
     try {
     
       
-      const url = `${config.public.apiBase}/mock/targets${initials}/kvartalssaldo`;
-      console.log("Fetching from:", url); 
+      const url = `${config.public.apiBase}/api/quarterly-data
+`;
       const response = await fetch(url);       
       if (!response.ok) {
         throw new Error(`Failed to fetch quarterly data: ${response.statusText}`)
@@ -38,60 +38,29 @@ export const useQuarterlyData = () => {
   }
 
  
-  const getYearData = (year: number): ProcessedYearData | null => {
-    if (!rawData.value) return null
+const getYearData = (year: number): ProcessedYearData | null => {
+  if (!rawData.value) return null
 
-    const yearData = rawData.value.data.find(d => d.year === year)
-    if (!yearData) return null
+  const yearData = rawData.value.data.find(d => d.year === year)
+  if (!yearData) return null
 
-    // Transform the data into chart-friendly format
-    const quarterly: QuarterlyChartData = {
-      Q1: {
-        total: yearData.quarters[0].afregnetArbejde + yearData.quarters[0].udstaendeTidsreg,
-        months: {
-          Jan: yearData.quarters[0].afregnetArbejde / 3,
-          Feb: yearData.quarters[0].afregnetArbejde / 3,
-          Mar: yearData.quarters[0].afregnetArbejde / 3,
-        }
-      },
-      Q2: {
-        total: yearData.quarters[1].afregnetArbejde + yearData.quarters[1].udstaendeTidsreg,
-        months: {
-          Apr: yearData.quarters[1].afregnetArbejde / 3,
-          May: yearData.quarters[1].afregnetArbejde / 3,
-          Jun: yearData.quarters[1].afregnetArbejde / 3,
-        }
-      },
-      Q3: {
-        total: yearData.quarters[2].afregnetArbejde + yearData.quarters[2].udstaendeTidsreg,
-        months: {
-          Jul: yearData.quarters[2].afregnetArbejde / 3,
-          Aug: yearData.quarters[2].afregnetArbejde / 3,
-          Sep: yearData.quarters[2].afregnetArbejde / 3,
-        }
-      },
-      Q4: {
-        total: yearData.quarters[3].afregnetArbejde + yearData.quarters[3].udstaendeTidsreg,
-        months: {
-          Oct: yearData.quarters[3].afregnetArbejde / 3,
-          Nov: yearData.quarters[3].afregnetArbejde / 3,
-          Dec: yearData.quarters[3].afregnetArbejde / 3,
-        }
-      }
-    }
+  const q = (idx: number) => yearData.quarters[idx] || { afregnetArbejde: 0, udstaendeTidsreg: 0 }
 
-    const totals = {
-      afregnetArbejde: yearData.quarters.reduce((sum, q) => sum + q.afregnetArbejde, 0),
-      udstaendeTidsreg: yearData.quarters.reduce((sum, q) => sum + q.udstaendeTidsreg, 0),
-      combined: yearData.quarters.reduce((sum, q) => sum + q.afregnetArbejde + q.udstaendeTidsreg, 0)
-    }
-
-    return {
-      year,
-      quarterly,
-      totals
-    }
+  const quarterly: QuarterlyChartData = {
+    Q1: { total: q(0).afregnetArbejde + q(0).udstaendeTidsreg, months: { Jan: q(0).afregnetArbejde/3, Feb: q(0).afregnetArbejde/3, Mar: q(0).afregnetArbejde/3 } },
+    Q2: { total: q(1).afregnetArbejde + q(1).udstaendeTidsreg, months: { Apr: q(1).afregnetArbejde/3, May: q(1).afregnetArbejde/3, Jun: q(1).afregnetArbejde/3 } },
+    Q3: { total: q(2).afregnetArbejde + q(2).udstaendeTidsreg, months: { Jul: q(2).afregnetArbejde/3, Aug: q(2).afregnetArbejde/3, Sep: q(2).afregnetArbejde/3 } },
+    Q4: { total: q(3).afregnetArbejde + q(3).udstaendeTidsreg, months: { Oct: q(3).afregnetArbejde/3, Nov: q(3).afregnetArbejde/3, Dec: q(3).afregnetArbejde/3 } },
   }
+
+  const totals = {
+    afregnetArbejde: yearData.quarters.reduce((sum, q) => sum + q.afregnetArbejde, 0),
+    udstaendeTidsreg: yearData.quarters.reduce((sum, q) => sum + q.udstaendeTidsreg, 0),
+    combined: yearData.quarters.reduce((sum, q) => sum + q.afregnetArbejde + q.udstaendeTidsreg, 0)
+  }
+
+  return { year, quarterly, totals }
+}
 
   /**
    * Get all available years from the data

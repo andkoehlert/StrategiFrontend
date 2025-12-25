@@ -14,8 +14,7 @@ export const useYearlyData = () => {
 
     try {
       
-      const url = `${config.public.apiBase}/mock/targets/${initials}/aarlige-saldo`;
-      console.log("Fetching from:", url); 
+      const url = `${config.public.apiBase}/api/aarlige-saldo`;
       const response = await fetch(url);         
       if (!response.ok) {
         throw new Error(`Failed to fetch yearly data: ${response.statusText}`)

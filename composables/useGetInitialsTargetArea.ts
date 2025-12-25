@@ -14,7 +14,7 @@ export const useAreaData = () => {
     error.value = null;
 
     try {
-      const url = `${config.public.apiBase}/mock/targets/${initials}/areas`;
+      const url = `${config.public.apiBase}/api/revenue-data/2023`;
       console.log("Fetching from:", url); 
       const response = await fetch(url);
 

@@ -14,17 +14,13 @@ export const useSegmentData = () => {
   const error = ref<string | null>(null)
   const config = useRuntimeConfig();
 
-  /**
-   * Fetch segment overview data from JSON file
-   * TODO: Replace with API endpoint when backend is ready
-   */
+
   const fetchSegmentData = async (initials: string): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
-      const url = `${config.public.apiBase}/mock/targets/${initials}/segment-overblik`;
-      console.log("Fetching from:", url); 
+      const url = `${config.public.apiBase}/api/segment-overblik`;
       const response = await fetch(url);       
       if (!response.ok) {
         throw new Error(`Failed to fetch segment data: ${response.statusText}`)

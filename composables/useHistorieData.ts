@@ -1,5 +1,3 @@
-// composables/useHistorieData.ts
-
 import type { 
   HistorieOverviewResponse, 
   YearHistorieData,
@@ -14,17 +12,13 @@ export const useHistorieData = () => {
   const error = ref<string | null>(null)
   const config = useRuntimeConfig();
 
-  /**
-   * Fetch historie overview data from JSON file
-   * TODO: Replace with API endpoint when backend is ready
-   */
+ 
   const fetchHistorieData = async (initials: string):  Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
-      const url = `${config.public.apiBase}/mock/targets/${initials}/stoerste-vaerdier`;
-      console.log("Fetching from:", url); 
+      const url = `${config.public.apiBase}/api/stoerste-perioder`;
       const response = await fetch(url);       
       if (!response.ok) {
         throw new Error(`Failed to fetch historie data: ${response.statusText}`)

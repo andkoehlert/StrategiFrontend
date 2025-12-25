@@ -14,8 +14,7 @@ export const useSummaryData = () => {
     error.value = null;
 
     try {
-      const url = `${config.public.apiBase}/mock/targets/${initials}/summary`;
-      console.log("Fetching from:", url); 
+      const url = `${config.public.apiBase}/api/summary-data`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -24,7 +23,6 @@ export const useSummaryData = () => {
 
       const data: YearDataResponse = await response.json();
 
-      // No filtering needed – just store the monthly array
       YearDataResponse.value = data;
     } catch (err: any) {
       console.error("Fetch error:", err);

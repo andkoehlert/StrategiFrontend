@@ -14,8 +14,7 @@ export const useMonthlyData = () => {
     error.value = null;
 
     try {
-      const url = `${config.public.apiBase}/mock/targets/${initials}/monthly`;
-      console.log("Fetching from:", url); // for debugging
+      const url = `${config.public.apiBase}/api/monthly-data/694bc5f239c374ba0f839567`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -24,7 +23,6 @@ export const useMonthlyData = () => {
 
       const data: MonthData = await response.json();
 
-      // No filtering needed – just store the monthly array
       monthlyDatas.value = data;
     } catch (err: any) {
       console.error("Fetch error:", err);

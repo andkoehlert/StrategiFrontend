@@ -11,9 +11,9 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-    runtimeConfig: {
+ runtimeConfig: {
   public: {
-    apiBase: "https://specifikation.api.kirklarsen.dk"
+    apiBase: process.env.NUXT_PUBLIC_API_BASE 
   }
 },
   modules: [
