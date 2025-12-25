@@ -15,7 +15,7 @@ interface LoginResponse {
   }
 }
 
-const API_BASE_URL = 'http://localhost:4000'
+const API_BASE_URL = 'https://mongo-api-2025.onrender.com/api/'
 
 const currentUser = ref<User | null>(null)
 const authToken = ref<string | null>(null)
