@@ -1,30 +1,30 @@
-import type { YearlyOverviewResponse, YearlyData, ProcessedYearlyData } from '~/interfaces/yearly'
-import { useRuntimeConfig } from "#imports"; 
+import { ref, computed, readonly } from 'vue'
+import type {
+  YearlyOverviewResponse,
+  YearlyData,
+  ProcessedYearlyData
+} from '~/interfaces/yearly'
+import { useApi } from './useApi'
 
 export const useYearlyData = () => {
   const rawData = ref<YearlyOverviewResponse | null>(null)
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
-  const config = useRuntimeConfig();
 
-  
+  const { apiRequest } = useApi()
+
   const fetchYearlyData = async (initials: string): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
-      
-      const url = `${config.public.apiBase}/api/aarlige-saldo`;
-      const response = await fetch(url);         
-      if (!response.ok) {
-        throw new Error(`Failed to fetch yearly data: ${response.statusText}`)
-      }
-
-      const data: YearlyOverviewResponse = await response.json()
+      const data = await apiRequest<YearlyOverviewResponse>(
+        '/api/aarlige-saldo/me'
+      )
       rawData.value = data
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error occurred'
+    } catch (err: any) {
       console.error('Error fetching yearly data:', err)
+      error.value = err.message || 'Unknown error occurred'
     } finally {
       loading.value = false
     }
@@ -62,7 +62,7 @@ export const useYearlyData = () => {
    */
   const allYearsData = computed<ProcessedYearlyData[]>(() => {
     if (!rawData.value) return []
-    
+
     return rawData.value.data
       .map(yearData => ({
         year: yearData.year,
@@ -80,11 +80,11 @@ export const useYearlyData = () => {
    */
   const bestPerformingYear = computed<ProcessedYearlyData | null>(() => {
     if (!rawData.value) return null
-    
-    const best = rawData.value.data.reduce((max, current) => 
+
+    const best = rawData.value.data.reduce((max, current) =>
       current.completionPercentage > max.completionPercentage ? current : max
     )
-    
+
     return {
       year: best.year,
       actual: best.afregnet,
@@ -100,11 +100,11 @@ export const useYearlyData = () => {
    */
   const highestRevenueYear = computed<ProcessedYearlyData | null>(() => {
     if (!rawData.value) return null
-    
-    const highest = rawData.value.data.reduce((max, current) => 
+
+    const highest = rawData.value.data.reduce((max, current) =>
       current.afregnet > max.afregnet ? current : max
     )
-    
+
     return {
       year: highest.year,
       actual: highest.afregnet,
@@ -120,13 +120,13 @@ export const useYearlyData = () => {
     rawData: readonly(rawData),
     loading: readonly(loading),
     error: readonly(error),
-    
+
     // Computed
     availableYears,
     allYearsData,
     bestPerformingYear,
     highestRevenueYear,
-    
+
     // Methods
     fetchYearlyData,
     getYearData

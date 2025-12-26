@@ -9,11 +9,15 @@ import type {
 } from '~/interfaces/monthly'
 import { useRuntimeConfig } from "#imports"; 
 
+import { useAuth } from './useAuth'
+
+
 export const useMonthlyOverviewData = () => {
   const rawData = ref<MonthlyOverviewResponse | null>(null)
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const config = useRuntimeConfig();
+  const { getToken } = useAuth()
 
   
   const fetchMonthlyOverviewData = async (initials: string):  Promise<void> => {
@@ -21,8 +25,17 @@ export const useMonthlyOverviewData = () => {
     error.value = null
 
     try {
-      const url = `${config.public.apiBase}/api/monthly-data/694bc5f239c374ba0f839567`;
-      const response = await fetch(url);      
+         const token = getToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+      const url = `${config.public.apiBase}/api/monthly-data/me`;
+       const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })      
       if (!response.ok) {
         throw new Error(`Failed to fetch monthly data: ${response.statusText}`)
       }

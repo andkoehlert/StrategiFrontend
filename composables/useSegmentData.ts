@@ -1,36 +1,31 @@
-// composables/useSegmentData.ts
-
+import { ref, computed, readonly } from 'vue'
 import type { 
   SegmentOverviewResponse, 
   YearSegmentData, 
   SegmentData,
   ProcessedSegmentData 
 } from '~/interfaces/segment'
-import { useRuntimeConfig } from "#imports"; 
+import { useApi } from './useApi'
 
 export const useSegmentData = () => {
   const rawData = ref<SegmentOverviewResponse | null>(null)
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
-  const config = useRuntimeConfig();
 
+  const { apiRequest } = useApi()
 
   const fetchSegmentData = async (initials: string): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
-      const url = `${config.public.apiBase}/api/segment-overblik`;
-      const response = await fetch(url);       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch segment data: ${response.statusText}`)
-      }
-
-      const data: SegmentOverviewResponse = await response.json()
+      const data = await apiRequest<SegmentOverviewResponse>(
+        '/api/segment-overblik/me'
+      )
       rawData.value = data
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error occurred'
+    } catch (err: any) {
       console.error('Error fetching segment data:', err)
+      error.value = err.message || 'Unknown error occurred'
     } finally {
       loading.value = false
     }
@@ -45,15 +40,11 @@ export const useSegmentData = () => {
     const yearData = rawData.value.data.find(d => d.year === year)
     if (!yearData) return null
 
-    // Filter out "I alt" (total) segment for processing
     const segments = yearData.segments.filter(s => s.name !== 'I alt')
-    
-    // Calculate total amount from all segments (excluding "I alt")
     const totalAmount = segments.reduce((sum, s) => sum + s.amount, 0)
 
-    // Find largest segment
-    const largestSegment = segments.length > 0
-      ? segments.reduce((max, current) => 
+    const largestSegment = segments.length
+      ? segments.reduce((max, current) =>
           current.amount > max.amount ? current : max
         )
       : null
@@ -62,11 +53,13 @@ export const useSegmentData = () => {
       year,
       segments,
       totalAmount,
-      largestSegment: largestSegment ? {
-        name: largestSegment.name,
-        amount: largestSegment.amount,
-        percentage: largestSegment.percentage
-      } : null
+      largestSegment: largestSegment
+        ? {
+            name: largestSegment.name,
+            amount: largestSegment.amount,
+            percentage: largestSegment.percentage
+          }
+        : null
     }
   }
 
@@ -85,19 +78,22 @@ export const useSegmentData = () => {
     const yearData = getYearSegments(year)
     if (!yearData) return []
 
-    // Return segments with recalculated percentages based on actual totals
     return yearData.segments.map(segment => ({
       ...segment,
-      percentage: yearData.totalAmount > 0 
-        ? (segment.amount / yearData.totalAmount) * 100 
-        : 0
+      percentage:
+        yearData.totalAmount > 0
+          ? (segment.amount / yearData.totalAmount) * 100
+          : 0
     }))
   }
 
   /**
    * Get the segment with highest growth between two years
    */
-  const getSegmentGrowth = (fromYear: number, toYear: number): {
+  const getSegmentGrowth = (
+    fromYear: number,
+    toYear: number
+  ): {
     segment: string
     growth: number
     fromAmount: number
@@ -111,7 +107,9 @@ export const useSegmentData = () => {
     let maxGrowth = { segment: '', growth: 0, fromAmount: 0, toAmount: 0 }
 
     fromData.segments.forEach(fromSegment => {
-      const toSegment = toData.segments.find(s => s.name === fromSegment.name)
+      const toSegment = toData.segments.find(
+        s => s.name === fromSegment.name
+      )
       if (toSegment) {
         const growth = toSegment.amount - fromSegment.amount
         if (growth > maxGrowth.growth) {
@@ -137,26 +135,21 @@ export const useSegmentData = () => {
     const yearData = rawData.value.data.find(d => d.year === year)
     if (!yearData) return 0
 
-    // Check if there's an "I alt" segment (total), otherwise calculate
     const totalSegment = yearData.segments.find(s => s.name === 'I alt')
     if (totalSegment) return totalSegment.amount
 
-    // Calculate from segments
     return yearData.segments
       .filter(s => s.name !== 'I alt')
       .reduce((sum, s) => sum + s.amount, 0)
   }
 
   return {
-    // State
     rawData: readonly(rawData),
     loading: readonly(loading),
     error: readonly(error),
-    
-    // Computed
+
     availableYears,
-    
-    // Methods
+
     fetchSegmentData,
     getYearSegments,
     getSegmentBreakdown,
