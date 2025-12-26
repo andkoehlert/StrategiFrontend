@@ -1,6 +1,5 @@
-// composables/useSegmentComparison.ts
 import { ref } from "vue";
-import { useApi } from './useApi'
+import { useApi } from "./useApi";
 
 interface ComparisonData {
   year: number;
@@ -10,9 +9,9 @@ interface ComparisonData {
 
 export const useSegmentComparison = () => {
   const error = ref<string | null>(null);
-  const loading = ref<boolean>(false);
+  const loading = ref(false);
   const comparisonData = ref<ComparisonData | null>(null);
-  const { apiRequest } = useApi()
+  const { apiRequest } = useApi();
 
   const fetchComparison = async (year: number): Promise<void> => {
     loading.value = true;
@@ -31,5 +30,10 @@ export const useSegmentComparison = () => {
     }
   };
 
-  return { error, loading, comparisonData, fetchComparison };
+  return {
+    error,
+    loading,
+    comparisonData,
+    fetchComparison
+  };
 };

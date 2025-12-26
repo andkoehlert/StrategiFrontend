@@ -193,7 +193,12 @@ const { monthlyDatas, fetchMonthlyDataByInitials, loading: monthlyLoading, error
 const { areaData, loading: areaLoading, error: areaError, fetchAreaDataByYear } = useAreaData() 
 const { loading: quarterlyLoading, error: quarterlyError, availableYears: quarterlyAvailableYears, fetchQuarterlyData, getYearData, getLargestQuarter } = useQuarterlyData()
 const { loading: yearlyLoading, error: yearlyError, fetchYearlyData, getYearData: getYearlyData } = useYearlyData()
-const { loading: segmentLoading, error: segmentError, fetchSegmentData, getYearSegments } = useSegmentData()
+const {
+  loading: segmentLoading,
+  error: segmentError,
+  comparisonData,
+  fetchComparison
+} = useSegmentComparison()
 const { loading: monthlyOverviewLoading, error: monthlyOverviewError, fetchMonthlyOverviewData, getYearMonthlyData } = useMonthlyOverviewData()
 const { loading: summaryLoading, error: summaryError, fetchSummaryData, YearDataResponse } = useSummaryData()
 const {
@@ -222,7 +227,7 @@ onMounted(async () => {
 fetchAreaDataByYear(selectedYear.value), 
 fetchQuarterlyData(initials),
     fetchYearlyData(initials),
-fetchSegmentData(),   
+  fetchComparison(selectedYear.value),
  fetchMonthlyOverviewData(initials),
     fetchHistorieData(initials),
     fetchSummaryData()
@@ -231,6 +236,12 @@ fetchSegmentData(),
 
 
 const selectedYear = ref(2024)
+
+const selectedYearSegmentData = computed(() => {
+  return comparisonData.value?.actuals ?? null
+})
+
+
 
 // Watch for year changes and refetch area data
 watch(selectedYear, async (newYear) => {
@@ -266,8 +277,8 @@ const selectedYearlyData = computed(() => {
   return getYearlyData(selectedYear.value)
 })
 
-const selectedYearSegmentData = computed(() => {
-  return getYearSegments(selectedYear.value)
+watch(selectedYear, async (newYear) => {
+  await fetchComparison(newYear)
 })
 
 const selectedYearMonthlyData = computed(() => {
