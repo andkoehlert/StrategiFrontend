@@ -83,7 +83,8 @@ import ECharts from '~/components/app/charts/ECharts.vue'
 
 const props = defineProps({
   data: Object,
-  type: String 
+  type: String ,
+  year: Number 
 })
 
 const chartOption = ref({})
@@ -155,8 +156,10 @@ const generateDataViewHTML = () => {
 const updateChart = () => {
   if (!props.data) return
   
-  const title = props.type === 'goals' ? 'Goals - Category Breakdown by Segment' : 'Actual - Category Breakdown by Segment'
-  
+  const title = props.type === 'goals' 
+    ? `Goals - Category Breakdown by Segment (${props.year || ''})` 
+    : `Actual - Category Breakdown by Segment (${props.year || ''})`
+    
   chartOption.value = {
     title: {
       text: title,

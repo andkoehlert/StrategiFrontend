@@ -1,28 +1,19 @@
 import { ref } from "vue";
 import type { YearDataResponse } from "../interfaces/summary";
-import { useRuntimeConfig } from "#imports"; 
+import { useApi } from './useApi'
 
 export const useSummaryData = () => {
   const error = ref<string | null>(null);
   const loading = ref<boolean>(false);
   const YearDataResponse = ref<YearDataResponse | null>(null);
+  const { apiRequest } = useApi()
 
-  const config = useRuntimeConfig();
-
-  const fetchSummaryByInitials = async (initials: string): Promise<void> => {
+  const fetchSummaryData = async (): Promise<void> => {
     loading.value = true;
     error.value = null;
 
     try {
-      const url = `${config.public.apiBase}/api/summary-data`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Fetch error: ${response.status} ${response.statusText}`);
-      }
-
-      const data: YearDataResponse = await response.json();
-
+      const data = await apiRequest<YearDataResponse>('/api/summary-data/me');
       YearDataResponse.value = data;
     } catch (err: any) {
       console.error("Fetch error:", err);
@@ -32,5 +23,5 @@ export const useSummaryData = () => {
     }
   };
 
-  return { error, loading, YearDataResponse, fetchSummaryByInitials };
+  return { error, loading, YearDataResponse, fetchSummaryData };
 };

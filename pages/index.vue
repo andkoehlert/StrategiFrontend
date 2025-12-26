@@ -149,7 +149,8 @@
     />
     
     <div class="flex flex-col gap-6">
-<CategoryBreakdownChart :data="categoryChartData" type="actual" />
+<CategoryBreakdownChart :data="categoryChartData" type="actual"  :year="selectedYear"
+ />
     </div>
     
     <Calender v-if="userInitials" :initials="userInitials" />
@@ -189,12 +190,12 @@ const handleLogout = () => {
 }
 
 const { monthlyDatas, fetchMonthlyDataByInitials, loading: monthlyLoading, error: monthlyError } = useMonthlyData()
-const { areaData, loading: areaLoading, error: areaError, fetchAreaDataByInitials } = useAreaData()
+const { areaData, loading: areaLoading, error: areaError, fetchAreaDataByYear } = useAreaData() 
 const { loading: quarterlyLoading, error: quarterlyError, availableYears: quarterlyAvailableYears, fetchQuarterlyData, getYearData, getLargestQuarter } = useQuarterlyData()
 const { loading: yearlyLoading, error: yearlyError, fetchYearlyData, getYearData: getYearlyData } = useYearlyData()
 const { loading: segmentLoading, error: segmentError, fetchSegmentData, getYearSegments } = useSegmentData()
 const { loading: monthlyOverviewLoading, error: monthlyOverviewError, fetchMonthlyOverviewData, getYearMonthlyData } = useMonthlyOverviewData()
-const { loading: summaryLoading, error: summaryError, fetchSummaryByInitials, YearDataResponse } = useSummaryData()
+const { loading: summaryLoading, error: summaryError, fetchSummaryData, YearDataResponse } = useSummaryData()
 const {
   loading: historieLoading,
   error: historieError,
@@ -218,19 +219,23 @@ onMounted(async () => {
  // Fetch all data with user's initials
   await Promise.all([
     fetchMonthlyDataByInitials(initials),
-    fetchAreaDataByInitials(initials),
-    fetchQuarterlyData(initials),
+fetchAreaDataByYear(selectedYear.value), 
+fetchQuarterlyData(initials),
     fetchYearlyData(initials),
-    fetchSegmentData(initials),
-    fetchMonthlyOverviewData(initials),
+fetchSegmentData(),   
+ fetchMonthlyOverviewData(initials),
     fetchHistorieData(initials),
-    fetchSummaryByInitials(initials)
+    fetchSummaryData()
   ])
 })
 
 
 const selectedYear = ref(2024)
 
+// Watch for year changes and refetch area data
+watch(selectedYear, async (newYear) => {
+  await fetchAreaDataByYear(newYear)
+})
 
 const selectedYearHistorieData = computed(() => {
   return getYearHistorieData(selectedYear.value)

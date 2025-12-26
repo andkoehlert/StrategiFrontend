@@ -1,29 +1,21 @@
 import { ref } from "vue";
 import type { AreaData } from "../interfaces/Areas";
-import { useRuntimeConfig } from "#imports"; 
+import { useApi } from './useApi'
 
 export const useAreaData = () => {
   const error = ref<string | null>(null);
   const loading = ref<boolean>(false);
   const areaData = ref<AreaData | null>(null);
+  const { apiRequest } = useApi()
 
-  const config = useRuntimeConfig();
-
-  const fetchAreaDataByInitials = async (initials: string): Promise<void> => {
+  // Remove the initials parameter since it comes from the token
+  // Add year parameter to make it dynamic
+  const fetchAreaDataByYear = async (year: number): Promise<void> => {
     loading.value = true;
     error.value = null;
 
     try {
-      const url = `${config.public.apiBase}/api/revenue-data/2023`;
-      console.log("Fetching from:", url); 
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Fetch error: ${response.status} ${response.statusText}`);
-      }
-
-      const data: AreaData = await response.json();
-
+      const data = await apiRequest<AreaData>(`/api/revenue-data/me/${year}`);
       areaData.value = data;
     } catch (err: any) {
       console.error("Fetch error:", err);
@@ -33,5 +25,5 @@ export const useAreaData = () => {
     }
   };
 
-  return { error, loading, areaData, fetchAreaDataByInitials };
+  return { error, loading, areaData, fetchAreaDataByYear };
 };
