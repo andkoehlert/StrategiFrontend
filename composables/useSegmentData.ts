@@ -154,26 +154,29 @@ export const useSegmentComparison = () => {
   })
 
   // Get segment-level comparison
-  const segmentComparison = computed(() => {
-    if (!goals.value || !actuals.value) return []
+ const segmentComparison = computed(() => {
+  if (!goals.value || !actuals.value) return []
+  
+  return goals.value.segments.map(goalSegment => {
+    const actualSegment = actuals.value!.segments.find(
+      s => s.name === goalSegment.name
+    )
     
-    return goals.value.segments.map(goalSegment => {
-      const actualSegment = actuals.value!.segments.find(
-        s => s.name === goalSegment.name
-      )
-      
-      return {
-        name: goalSegment.name,
-        goalCount: goalSegment.count,
-        actualCount: actualSegment?.count || 0,
-        goalTotal: goalSegment.total,
-        actualTotal: actualSegment?.total || 0,
-        achievement: actualSegment && goalSegment.total > 0
-          ? (actualSegment.total / goalSegment.total) * 100 
-          : 0
-      }
-    })
+    return {
+      name: goalSegment.name,
+      goalCount: goalSegment.count,
+      actualCount: actualSegment?.count || 0,
+      goalTotal: goalSegment.total,
+      actualTotal: actualSegment?.total || 0,
+      achievement: actualSegment && goalSegment.total > 0
+        ? (actualSegment.total / goalSegment.total) * 100 
+        : 0,
+      goalData: goalSegment.data,          
+      actualData: actualSegment?.data || goalSegment.data.map(() => 0), 
+      categories: goals.value!.categories    
+    }
   })
+})
 
   return {
     comparisonData,
