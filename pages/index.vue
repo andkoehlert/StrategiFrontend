@@ -29,9 +29,8 @@
     </div>
     
     <template v-else>
-      <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-4 rounded-xl">
-        <div class="flex justify-between items-center">
-          <h3 class="text-white text-lg font-semibold">Valgt år</h3>
+      <div class=" rounded-xl">
+        <div class="flex justify-end items-center">
           <select 
             v-model="selectedYear" 
             class="bg-[#0d3a5c] text-white px-6 py-3 rounded-lg border border-white/20 focus:outline-none focus:border-[#91cc75] text-lg font-semibold"
@@ -57,13 +56,15 @@
             </div>
             
             <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl">
-              <h3 class="text-white text-lg font-semibold mb-4">Dit kvatale saldo</h3>
+              <h3 class="text-white text-lg font-semibold mb-4">Din historik</h3>
               <div class="h-[400px] flex items-center justify-center text-white w-full">
-                <QuarterlyPieChart 
-                  :yearData="selectedYearQuarterlyData"
-                  :year="selectedYear"
-                  type="actual"
-                />
+                 <HistorikChart 
+                v-if="historieYearSummary && historieYearSummary.length > 0"
+                class="w-full h-full"
+                :year-summary="historieYearSummary" 
+                :selected-year="selectedYear"
+                @year-selected="handleYearSelected"
+              />
               </div>
             </div>
           </div>
@@ -78,64 +79,36 @@
                   type="actual"
             />
           </div>
+           
         </div>
-        
+         
         <div class="lg:col-span-1 flex flex-col gap-6">
           
-          <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl flex-1">
+<div class="bg-gradient-to-b from-[#175381] to-[#175381] p-6 rounded-xl flex flex-col ">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-white text-lg font-semibold">Segment overblik</h3>
               <span class="text-[#91cc75] text-sm font-semibold">{{ selectedYear }}</span>
             </div>
-            <div class="h-full flex items-center justify-center text-white">
                <SegmentOverviewChart 
-                :segmentData="selectedYearSegmentData"
-                :year="selectedYear"
+               :achievementPercentage="achievementPercentage"
+          :segmentComparison="segmentComparison"
               />
-            </div>
+            
           </div>
-          
-          <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl flex flex-col h-[450px]">
-            <h3 class="text-white text-lg font-semibold mb-4">Historik</h3>
-            <div class="flex-1 w-full">
-               <HistorikChart 
-                v-if="historieYearSummary && historieYearSummary.length > 0"
-                class="w-full h-full"
-                :year-summary="historieYearSummary" 
-                :selected-year="selectedYear"
-                @year-selected="handleYearSelected"
-              />
-            </div>
 
-            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
-              <div class="text-center">
-                <p class="text-gray-300 text-xs mb-1">Største måned</p>
-                <p class="text-white font-semibold text-sm">
-                  {{ selectedYearData?.statistics?.largestMonth?.name || '-' }}
-                </p>
-                <p class="text-[#91cc75] text-xs">
-                  {{ formatCurrency(selectedYearData?.statistics?.largestMonth?.value) }}
-                </p>
-              </div>
-              <div class="text-center">
-                <p class="text-gray-300 text-xs mb-1">Største år</p>
-                <p class="text-white font-semibold text-sm">{{ largestYear.year }}</p>
-                <p class="text-[#91cc75] text-xs">{{ formatCurrency(largestYear.total) }}</p>
-              </div>
-              <div class="text-center">
-                <p class="text-gray-300 text-xs mb-1">Største kvatal</p>
-                <p class="text-white font-semibold text-sm">
-                  {{ largestQuarterDisplay.name }}
-                </p>
-                <p class="text-[#91cc75] text-xs">
-                  {{ formatCurrency(largestQuarterDisplay.value) }}
-                </p>
-              </div>
-            </div>
-          </div>
+          
+          
+       
         </div>
       </div>
-      
+       <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl flex-1 flex flex-col">
+            <h3 class="text-white text-lg font-semibold mb-4">Dit performance vs mål</h3>
+            <p class="text-gray-300 text-sm mb-4">Du har her mulighed for at ændre dine kvatale mål.</p>
+            <GoalsVsActuals
+          :achievementPercentage="achievementPercentage"
+          :segmentComparison="segmentComparison"
+        />
+          </div>
     </template>
   </div>
   
@@ -166,6 +139,7 @@ import { ref, computed, onMounted } from 'vue'
 import SegmentChart from '~/components/app/charts/SegmentChart.vue'
 import CategoryBreakdownChart from '~/components/app/charts/CategoryBreakdownChart.vue'
 import DineTal from '~/components/app/DineTal.vue'
+import GoalsVsActuals from '~/components/app/charts/GoalsVsActuals.vue'
 import QuarterlyPieChart from '~/components/app/charts/QuarterlyPieChart.vue'
 import SegmentOverviewChart from '~/components/app/charts/SegmentOverviewChart.vue'
 import HistorikChart from '~/components/app/charts/HistorikChart.vue'
@@ -196,9 +170,13 @@ const { loading: yearlyLoading, error: yearlyError, fetchYearlyData, getYearData
 const {
   loading: segmentLoading,
   error: segmentError,
-  comparisonData,
+  processedActuals,     
+  processedGoals,     
+  achievementPercentage,
+  segmentComparison,
   fetchComparison
 } = useSegmentComparison()
+
 const { loading: monthlyOverviewLoading, error: monthlyOverviewError, fetchMonthlyOverviewData, getYearMonthlyData } = useMonthlyOverviewData()
 const { loading: summaryLoading, error: summaryError, fetchSummaryData, YearDataResponse } = useSummaryData()
 const {
@@ -223,13 +201,13 @@ onMounted(async () => {
 
  // Fetch all data with user's initials
   await Promise.all([
-    fetchMonthlyDataByInitials(initials),
+    fetchMonthlyDataByInitials(),
 fetchAreaDataByYear(selectedYear.value), 
-fetchQuarterlyData(initials),
-    fetchYearlyData(initials),
+fetchQuarterlyData(),
+    fetchYearlyData(),
   fetchComparison(selectedYear.value),
- fetchMonthlyOverviewData(initials),
-    fetchHistorieData(initials),
+ fetchMonthlyOverviewData(),
+    fetchHistorieData(),
     fetchSummaryData()
   ])
 })
@@ -237,16 +215,19 @@ fetchQuarterlyData(initials),
 
 const selectedYear = ref(2024)
 
-const selectedYearSegmentData = computed(() => {
-  return comparisonData.value?.actuals ?? null
-})
-
-
-
-// Watch for year changes and refetch area data
+// Watch for year changes
 watch(selectedYear, async (newYear) => {
-  await fetchAreaDataByYear(newYear)
+  await Promise.all([
+    fetchAreaDataByYear(newYear),
+    fetchComparison(newYear)
+  ])
 })
+
+
+const selectedYearSegmentData = computed(() => {
+  return processedActuals.value
+})
+
 
 const selectedYearHistorieData = computed(() => {
   return getYearHistorieData(selectedYear.value)

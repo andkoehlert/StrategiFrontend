@@ -17,10 +17,9 @@ export interface ProcessedSegmentData {
   } | null;
 }
 
-// This matches the backend response
 export interface SegmentOverviewResponse {
   userId: string;
-  year: number;         // Single year (not array)
+  year: number;         
   categories: string[];
   segments: Array<{
     name: string;
