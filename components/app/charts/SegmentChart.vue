@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full">
     <div v-if="!yearData" class="flex items-center justify-center h-[450px] text-gray-400">
-      No data available for {{ year }}
+      Ingen data tilgængelig {{ year }}
     </div>
     <ECharts 
       v-else

@@ -21,6 +21,9 @@
 
     <!-- Chart -->
     <div class="w-full h-[380px]">
+      <div v-if="!yearData" class="flex items-center justify-center h-[450px] text-gray-400">
+      Ingen data tilgængelig {{ year }}
+    </div>
     <ECharts
   v-if="chartOption"
   :key="mode"

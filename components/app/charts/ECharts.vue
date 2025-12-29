@@ -16,12 +16,16 @@ const { $echarts } = useNuxtApp()
 const chartRef = ref<HTMLElement>()
 let chartInstance: any = null
 
+// Expose the chart instance to parent components
+defineExpose({
+  getChartInstance: () => chartInstance
+})
+
 onMounted(() => {
   if (chartRef.value) {
-    // Add devicePixelRatio option for high-DPI displays
-  chartInstance = $echarts.init(chartRef.value, 'light', {
-  renderer: 'svg'
-})
+    chartInstance = $echarts.init(chartRef.value, 'light', {
+      renderer: 'canvas' 
+    })
 
     chartInstance.setOption(props.option)
     
@@ -46,8 +50,7 @@ watch(
       lazyUpdate: false
     })
   },
-  { deep: true,  immediate: true  }
-  
+  { deep: true, immediate: true }
 )
 
 onBeforeUnmount(() => {

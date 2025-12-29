@@ -1,79 +1,85 @@
 <template>
   <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl">
-    <ECharts :option="chartOption" width="100%" height="550px" />
-    
-    <!-- Custom Table View Toggle -->
-    <div class="mt-4">
-      <button 
-        @click="showTable = !showTable"
-        class="px-4 py-2 bg-[#CFAE76] hover:bg-[#002847] text-white rounded-lg transition-colors"
-      >
-        {{ showTable ? 'Hide Table' : 'Vis i Excel format' }}
-      </button>
-    </div>
-
-    <!-- Data Table -->
-    <div v-if="showTable" class="mt-6 rounded-lg overflow-hidden">
-      <div class="overflow-y-auto max-h-[60vh]">
-        <table class="w-full text-sm text-white border-collapse">
-          <thead class="bg-[#002847] sticky top-0">
-            <tr>
-              <th class="p-4 text-xs text-left rounded-tl-lg">Segment</th>
-              <th 
-                v-for="category in props.data?.categories" 
-                :key="category"
-                class="p-4 text-xs text-center"
-              >
-                {{ category }}
-              </th>
-              <th class="p-4 text-xs text-center rounded-tr-lg">Total</th>
-            </tr>
-          </thead>
-
-          <tbody v-if="props.data?.segments?.length">
-            <tr
-              v-for="(segment, index) in props.data.segments"
-              :key="index"
-              :class="index % 2 === 0 ? 'bg-[#00345C]' : 'bg-[#002847]'"
-            >
-              <td class="p-4 text-xs font-semibold">{{ segment.name }}</td>
-              <td 
-                v-for="(value, idx) in segment.data" 
-                :key="idx"
-                class="p-4 text-xs text-center border-l border-[#004274]"
-              >
-                {{ formatNumber(value) }}
-              </td>
-              <td class="p-4 text-xs text-center font-semibold text-green-400 border-l-2 border-[#004274]">
-                {{ formatNumber(segment.data.reduce((a, b) => a + b, 0)) }}
-              </td>
-            </tr>
-          </tbody>
-
-          <tfoot v-if="props.data?.segments?.length">
-            <tr class="bg-[#001F3D] font-semibold">
-              <td class="p-4 text-xs rounded-bl-lg">Total</td>
-              <td 
-                v-for="(category, idx) in props.data.categories" 
-                :key="category"
-                class="p-4 text-xs text-center border-l border-[#004274]"
-              >
-                {{ formatNumber(getCategoryTotal(idx)) }}
-              </td>
-              <td class="p-4 text-xs text-center text-green-400 border-l-2 border-[#004274] rounded-br-lg">
-                {{ formatNumber(getGrandTotal()) }}
-              </td>
-            </tr>
-          </tfoot>
-
-          <tbody v-else>
-            <tr>
-              <td colspan="100%" class="p-4 text-center text-white">Ingen data tilgængelig</td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-if="!data || !data.segments || data.segments.length === 0" class="flex items-center justify-center h-[450px] text-gray-400">
+      <div class="text-center">
+        <svg class="w-16 h-16 mx-auto mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-lg">Ingen data tilgængelig for {{ year }}</p>
       </div>
     </div>
+
+    <!-- Chart Content -->
+    <template v-else>
+      <ECharts :option="chartOption" width="100%" height="550px" />
+      
+      <!-- Custom Table View Toggle -->
+      <div class="mt-4">
+        <button 
+          @click="showTable = !showTable"
+          class="px-4 py-2 bg-[#CFAE76] hover:bg-[#002847] text-white rounded-lg transition-colors"
+        >
+          {{ showTable ? 'Hide Table' : 'Vis i Excel format' }}
+        </button>
+      </div>
+
+      <!-- Data Table -->
+      <div v-if="showTable" class="mt-6 rounded-lg overflow-hidden">
+        <div class="overflow-y-auto max-h-[60vh]">
+          <table class="w-full text-sm text-white border-collapse">
+            <thead class="bg-[#002847] sticky top-0">
+              <tr>
+                <th class="p-4 text-xs text-left rounded-tl-lg">Segment</th>
+                <th 
+                  v-for="category in data.categories" 
+                  :key="category"
+                  class="p-4 text-xs text-center"
+                >
+                  {{ category }}
+                </th>
+                <th class="p-4 text-xs text-center rounded-tr-lg">Total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                v-for="(segment, index) in data.segments"
+                :key="index"
+                :class="index % 2 === 0 ? 'bg-[#00345C]' : 'bg-[#002847]'"
+              >
+                <td class="p-4 text-xs font-semibold">{{ segment.name }}</td>
+                <td 
+                  v-for="(value, idx) in segment.data" 
+                  :key="idx"
+                  class="p-4 text-xs text-center border-l border-[#004274]"
+                >
+                  {{ formatNumber(value) }}
+                </td>
+                <td class="p-4 text-xs text-center font-semibold text-green-400 border-l-2 border-[#004274]">
+                  {{ formatNumber(segment.data.reduce((a, b) => a + b, 0)) }}
+                </td>
+              </tr>
+            </tbody>
+
+            <tfoot>
+              <tr class="bg-[#001F3D] font-semibold">
+                <td class="p-4 text-xs rounded-bl-lg">Total</td>
+                <td 
+                  v-for="(category, idx) in data.categories" 
+                  :key="category"
+                  class="p-4 text-xs text-center border-l border-[#004274]"
+                >
+                  {{ formatNumber(getCategoryTotal(idx)) }}
+                </td>
+                <td class="p-4 text-xs text-center text-green-400 border-l-2 border-[#004274] rounded-br-lg">
+                  {{ formatNumber(getGrandTotal()) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -83,7 +89,7 @@ import ECharts from '~/components/app/charts/ECharts.vue'
 
 const props = defineProps({
   data: Object,
-  type: String ,
+  type: String,
   year: Number 
 })
 
@@ -154,7 +160,7 @@ const generateDataViewHTML = () => {
 }
 
 const updateChart = () => {
-  if (!props.data) return
+  if (!props.data || !props.data.segments || props.data.segments.length === 0) return
   
   const title = props.type === 'goals' 
     ? `Goals - Category Breakdown by Segment (${props.year || ''})` 
@@ -248,4 +254,5 @@ const updateChart = () => {
 }
 
 watch(() => props.data, updateChart, { deep: true, immediate: true })
+watch(() => props.year, updateChart, { immediate: true })
 </script>

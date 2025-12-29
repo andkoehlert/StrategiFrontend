@@ -14,10 +14,11 @@
     </div>
     
     <DineTal
+      v-model:year="selectedYear"
       :totalamount="totalamount"
       :udståendetids="udståendetids"
       :totalPotienale="totalPotienale"
-      :year="selectedYear"
+      :availableYears="availableYears"
     />
 
     
@@ -30,19 +31,6 @@
     </div>
     
     <template v-else>
-      <div class="rounded-xl">
-        <div class="flex justify-end items-center">
-          <select 
-            v-model="selectedYear" 
-            class="bg-[#0d3a5c] text-white px-6 py-3 rounded-lg border border-white/20 focus:outline-none focus:border-[#91cc75] text-lg font-semibold"
-          >
-            <option v-for="year in availableYears" :key="year" :value="year">
-              {{ year }}
-            </option>
-          </select>
-        </div>
-      </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div class="lg:col-span-2 flex flex-col gap-6">
@@ -112,10 +100,11 @@
   
   <div class="flex flex-col gap-8 pt-4">
     <DineMål
+      v-model:year="selectedYear"
       :totalamount="totalamount"
       :udståendetids="udståendetids"
       :totalPotienale="totalPotienale"
-      @year-selected="handleYearSelected"
+      :availableYears="availableYears"
     />
     
     <div class="flex flex-col gap-6">
@@ -123,6 +112,7 @@
         :data="categoryChartData" 
         type="actual"  
         :year="selectedYear"
+        :key="`category-${selectedYear}`"
       />
     </div>
     
