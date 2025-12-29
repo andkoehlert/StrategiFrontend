@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col gap-8">
-    <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-4 rounded-xl flex justify-between items-center">
+    <div class=" p-4 rounded-xl flex justify-between items-center">
       <div>
-        <h2 class="text-white text-xl font-semibold">Velkommen, {{ currentUser?.name }}</h2>
+        <h3 class="text-white text-xl font-semibold">Velkommen, {{ currentUser?.name }}</h3>
         <p class="text-gray-300 text-sm">{{ currentUser?.email }}</p>
       </div>
       <button 
@@ -99,13 +99,14 @@
   </div>
   
   <div class="flex flex-col gap-8 pt-4">
-    <DineMål
-      v-model:year="selectedYear"
-      :totalamount="totalamount"
-      :udståendetids="udståendetids"
-      :totalPotienale="totalPotienale"
-      :availableYears="availableYears"
-    />
+     <DineMål
+    v-model:year="selectedYear"
+    :totalamount="totalamount"
+    :udståendetids="udståendetids"
+    :totalPotienale="totalPotienale"
+    :totalGoals="totalGoals"
+    :availableYears="availableYears"
+  />
     
     <div class="flex flex-col gap-6">
       <CategoryBreakdownChart 
@@ -200,6 +201,11 @@ onMounted(async () => {
 })
 
 const selectedYear = ref(2024)
+
+const totalGoals = computed(() => {
+  if (!areaData.value || !areaData.value.totals) return 0
+  return areaData.value.totals.grandTotal
+})
 
 // Watch for year changes
 watch(selectedYear, async (newYear) => {

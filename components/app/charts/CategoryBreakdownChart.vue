@@ -162,10 +162,8 @@ const generateDataViewHTML = () => {
 const updateChart = () => {
   if (!props.data || !props.data.segments || props.data.segments.length === 0) return
   
-  const title = props.type === 'goals' 
-    ? `Goals - Category Breakdown by Segment (${props.year || ''})` 
-    : `Actual - Category Breakdown by Segment (${props.year || ''})`
-    
+ const title = 'Dine mål overblik'
+
   chartOption.value = {
     title: {
       text: title,
