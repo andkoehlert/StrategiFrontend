@@ -1,86 +1,89 @@
 <template>
   <div class="bg-gradient-to-b from-[#175381] to-[#175381]/30 p-6 rounded-xl">
-    <ECharts :option="chartOption" width="100%" height="550px" />
-
-    <div class="mt-4">
-      <button
-        @click="showTable = !showTable"
-        class="px-4 py-2 bg-[#CFAE76] hover:bg-[#002847] text-white rounded-lg transition-colors"
-      >
-        {{ showTable ? 'Skjul tabel' : 'Vis i Excel format' }}
-      </button>
+    <!-- Show message when no data -->
+    <div v-if="!props.segmentComparison?.length" class="text-center py-20">
+      <p class="text-white text-lg mb-2">Ingen data tilgængelig for {{ props.year }}</p>
+      <p class="text-gray-400 text-sm">Der er ingen mål eller performance data for dette år.</p>
     </div>
 
-    <!--  Data Table with Categories -->
-    <div v-if="showTable" class="mt-6 rounded-lg overflow-hidden">
-      <div class="overflow-y-auto max-h-[60vh]">
-        <table class="w-full text-sm text-white border-collapse">
-          <thead class="bg-[#002847] sticky top-0">
-            <tr>
-              <th class="p-4 text-xs text-left rounded-tl-lg">Segment</th>
-              <th class="p-4 text-xs text-center">Mål Total</th>
-              <th class="p-4 text-xs text-center">Performance Total</th>
-              <th class="p-4 text-xs text-center rounded-tr-lg">Difference %</th>
-            </tr>
-          </thead>
+    <!-- Show chart when data exists -->
+    <template v-else>
+      <ECharts :option="chartOption" width="100%" height="550px" />
 
-          <tbody v-if="props.segmentComparison?.length">
-            <template v-for="(s, i) in props.segmentComparison" :key="i">
-              <!-- Main row -->
-              <tr
-                :class="i % 2 === 0 ? 'bg-[#00345C]' : 'bg-[#002847]'"
-                class="cursor-pointer hover:bg-[#175381]"
-                @click="expandedRow = expandedRow === i ? -1 : i"
-              >
-                <td class="p-4 text-xs font-semibold">
-                  {{ s.name }}
-                  <span class="ml-2 text-gray-400">{{ expandedRow === i ? '▼' : '▶' }}</span>
-                </td>
-                <td class="p-4 text-xs text-center">{{ formatNumber(s.goalTotal) }}</td>
-                <td class="p-4 text-xs text-center">{{ formatNumber(s.actualTotal) }}</td>
-                <td
-                  class="p-4 text-xs text-center font-semibold"
-                  :class="((s.actualTotal - s.goalTotal)/s.goalTotal >= 0) ? 'text-green-400' : 'text-red-400'"
-                >
-                  {{ s.goalTotal ? (((s.actualTotal - s.goalTotal) / s.goalTotal) * 100).toFixed(1) + '%' : '–' }}
-                </td>
+      <div class="mt-4">
+        <button
+          @click="showTable = !showTable"
+          class="px-4 py-2 bg-[#CFAE76] hover:bg-[#002847] text-white rounded-lg transition-colors"
+        >
+          {{ showTable ? 'Skjul tabel' : 'Vis i Excel format' }}
+        </button>
+      </div>
+
+      <!--  Data Table with Categories -->
+      <div v-if="showTable" class="mt-6 rounded-lg overflow-hidden">
+        <div class="overflow-y-auto max-h-[60vh]">
+          <table class="w-full text-sm text-white border-collapse">
+            <thead class="bg-[#002847] sticky top-0">
+              <tr>
+                <th class="p-4 text-xs text-left rounded-tl-lg">Segment</th>
+                <th class="p-4 text-xs text-center">Mål Total</th>
+                <th class="p-4 text-xs text-center">Performance Total</th>
+                <th class="p-4 text-xs text-center rounded-tr-lg">Difference %</th>
               </tr>
-              
-              <!-- expand  category breakdown -->
-              <tr v-if="expandedRow === i" class="bg-[#001F3D]">
-                <td colspan="4" class="p-4">
-                  <div class="text-xs space-y-2">
-                    <div class="font-semibold text-gray-300 mb-2">Kategori opdeling:</div>
-                    <div 
-                      v-for="(category, catIdx) in s.categories" 
-                      :key="catIdx"
-                      class="flex justify-between items-center py-1 border-b border-gray-700"
-                    >
-                      <span class="text-gray-400">{{ category }}</span>
-                      <div class="flex gap-4">
-                        <span class="text-yellow-400">Mål: {{ formatNumber(s.goalData[catIdx]) }}</span>
-                        <span class="text-green-400">Performance: {{ formatNumber(s.actualData[catIdx]) }}</span>
-                        <span 
-                          :class="s.actualData[catIdx] >= s.goalData[catIdx] ? 'text-green-400' : 'text-red-400'"
-                        >
-                          {{ s.goalData[catIdx] ? (((s.actualData[catIdx] - s.goalData[catIdx]) / s.goalData[catIdx]) * 100).toFixed(0) + '%' : '–' }}
-                        </span>
+            </thead>
+
+            <tbody>
+              <template v-for="(s, i) in props.segmentComparison" :key="i">
+                <!-- Main row -->
+                <tr
+                  :class="i % 2 === 0 ? 'bg-[#00345C]' : 'bg-[#002847]'"
+                  class="cursor-pointer hover:bg-[#175381]"
+                  @click="expandedRow = expandedRow === i ? -1 : i"
+                >
+                  <td class="p-4 text-xs font-semibold">
+                    {{ s.name }}
+                    <span class="ml-2 text-gray-400">{{ expandedRow === i ? '▼' : '▶' }}</span>
+                  </td>
+                  <td class="p-4 text-xs text-center">{{ formatNumber(s.goalTotal) }}</td>
+                  <td class="p-4 text-xs text-center">{{ formatNumber(s.actualTotal) }}</td>
+                  <td
+                    class="p-4 text-xs text-center font-semibold"
+                    :class="((s.actualTotal - s.goalTotal)/s.goalTotal >= 0) ? 'text-green-400' : 'text-red-400'"
+                  >
+                    {{ s.goalTotal ? (((s.actualTotal - s.goalTotal) / s.goalTotal) * 100).toFixed(1) + '%' : '–' }}
+                  </td>
+                </tr>
+                
+                <!-- expand category breakdown -->
+                <tr v-if="expandedRow === i" class="bg-[#001F3D]">
+                  <td colspan="4" class="p-4">
+                    <div class="text-xs space-y-2">
+                      <div class="font-semibold text-gray-300 mb-2">Kategori opdeling:</div>
+                      <div 
+                        v-for="(category, catIdx) in s.categories" 
+                        :key="catIdx"
+                        class="flex justify-between items-center py-1 border-b border-gray-700"
+                      >
+                        <span class="text-gray-400">{{ category }}</span>
+                        <div class="flex gap-4">
+                          <span class="text-yellow-400">Mål: {{ formatNumber(s.goalData[catIdx]) }}</span>
+                          <span class="text-green-400">Performance: {{ formatNumber(s.actualData[catIdx]) }}</span>
+                          <span 
+                            :class="s.actualData[catIdx] >= s.goalData[catIdx] ? 'text-green-400' : 'text-red-400'"
+                          >
+                            {{ s.goalData[catIdx] ? (((s.actualData[catIdx] - s.goalData[catIdx]) / s.goalData[catIdx]) * 100).toFixed(0) + '%' : '–' }}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-
-          <tbody v-else>
-            <tr>
-              <td colspan="4" class="p-4 text-center text-white">Ingen data tilgængelig</td>
-            </tr>
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -101,7 +104,10 @@ const formatNumber = (value) =>
   new Intl.NumberFormat('da-DK').format(value ?? 0)
 
 const updateChart = () => {
-  if (!props.segmentComparison?.length) return
+  if (!props.segmentComparison?.length) {
+    chartOption.value = {}
+    return
+  }
 
   chartOption.value = {
     title: {
@@ -286,7 +292,7 @@ const updateChart = () => {
 }
 
 watch(
-  () => props.segmentComparison,
+  () => [props.segmentComparison, props.year],
   updateChart,
   { deep: true, immediate: true }
 )

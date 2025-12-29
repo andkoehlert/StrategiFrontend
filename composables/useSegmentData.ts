@@ -1,49 +1,16 @@
 // composables/useSegmentComparison.ts
 import { ref, computed } from 'vue'
 import { useApi } from './useApi'
-import type { ProcessedSegmentData } from '~/interfaces/segment'
+import type { ProcessedSegmentData, ComparisonResponse } from '~/interfaces/segment'
 
-interface ComparisonResponse {
-  year: number;
-  goals: {
-    userId: string;
-    year: number;
-    categories: string[];
-    segments: Array<{
-      name: string;
-      count: number;
-      data: number[];
-      total: number;
-    }>;
-    totals: {
-      count: number;
-      data: number[];
-      grandTotal: number;
-    };
-  } | null;
-  actuals: {
-    userId: string;
-    year: number;
-    categories: string[];
-    segments: Array<{
-      name: string;
-      count: number;
-      data: number[];
-      total: number;
-    }>;
-    totals: {
-      count: number;
-      data: number[];
-      grandTotal: number;
-    };
-  } | null;
-}
+
+
+// Use useState to create a shared state across components
+const comparisonData = useState<ComparisonResponse | null>('segmentComparison', () => null)
+const loading = useState<boolean>('segmentComparisonLoading', () => false)
+const error = useState<string | null>('segmentComparisonError', () => null)
 
 export const useSegmentComparison = () => {
-  const comparisonData = ref<ComparisonResponse | null>(null)
-  const loading = ref<boolean>(false)
-  const error = ref<string | null>(null)
-
   const { apiRequest } = useApi()
 
   const fetchComparison = async (year: number): Promise<void> => {
@@ -51,13 +18,21 @@ export const useSegmentComparison = () => {
     error.value = null
 
     try {
+      console.log('🔍 Fetching comparison for year:', year)
       const data = await apiRequest<ComparisonResponse>(
         `/api/segment-overblik/comparison/${year}`
       )
+      console.log('✅ Received comparison data:', data)
       comparisonData.value = data
     } catch (err: any) {
-      console.error('Error fetching comparison:', err)
+      console.error('❌ Error fetching comparison:', err)
       error.value = err.message || 'Unknown error occurred'
+      
+      comparisonData.value = {
+        year: year,
+        goals: null,
+        actuals: null
+      }
     } finally {
       loading.value = false
     }
@@ -154,29 +129,29 @@ export const useSegmentComparison = () => {
   })
 
   // Get segment-level comparison
- const segmentComparison = computed(() => {
-  if (!goals.value || !actuals.value) return []
-  
-  return goals.value.segments.map(goalSegment => {
-    const actualSegment = actuals.value!.segments.find(
-      s => s.name === goalSegment.name
-    )
+  const segmentComparison = computed(() => {
+    if (!goals.value || !actuals.value) return []
     
-    return {
-      name: goalSegment.name,
-      goalCount: goalSegment.count,
-      actualCount: actualSegment?.count || 0,
-      goalTotal: goalSegment.total,
-      actualTotal: actualSegment?.total || 0,
-      achievement: actualSegment && goalSegment.total > 0
-        ? (actualSegment.total / goalSegment.total) * 100 
-        : 0,
-      goalData: goalSegment.data,          
-      actualData: actualSegment?.data || goalSegment.data.map(() => 0), 
-      categories: goals.value!.categories    
-    }
+    return goals.value.segments.map(goalSegment => {
+      const actualSegment = actuals.value!.segments.find(
+        s => s.name === goalSegment.name
+      )
+      
+      return {
+        name: goalSegment.name,
+        goalCount: goalSegment.count,
+        actualCount: actualSegment?.count || 0,
+        goalTotal: goalSegment.total,
+        actualTotal: actualSegment?.total || 0,
+        achievement: actualSegment && goalSegment.total > 0
+          ? (actualSegment.total / goalSegment.total) * 100 
+          : 0,
+        goalData: goalSegment.data,          
+        actualData: actualSegment?.data || goalSegment.data.map(() => 0), 
+        categories: goals.value!.categories    
+      }
+    })
   })
-})
 
   return {
     comparisonData,

@@ -8,8 +8,7 @@ export const useAreaData = () => {
   const areaData = ref<AreaData | null>(null);
   const { apiRequest } = useApi()
 
-  // Remove the initials parameter since it comes from the token
-  // Add year parameter to make it dynamic
+
   const fetchAreaDataByYear = async (year: number): Promise<void> => {
     loading.value = true;
     error.value = null;

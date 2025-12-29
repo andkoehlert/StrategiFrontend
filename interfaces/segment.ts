@@ -16,6 +16,41 @@ export interface ProcessedSegmentData {
     percentage: number;
   } | null;
 }
+export interface ComparisonResponse {
+  year: number;
+  goals: {
+    userId: string;
+    year: number;
+    categories: string[];
+    segments: Array<{
+      name: string;
+      count: number;
+      data: number[];
+      total: number;
+    }>;
+    totals: {
+      count: number;
+      data: number[];
+      grandTotal: number;
+    };
+  } | null;
+  actuals: {
+    userId: string;
+    year: number;
+    categories: string[];
+    segments: Array<{
+      name: string;
+      count: number;
+      data: number[];
+      total: number;
+    }>;
+    totals: {
+      count: number;
+      data: number[];
+      grandTotal: number;
+    };
+  } | null;
+}
 
 export interface SegmentOverviewResponse {
   userId: string;

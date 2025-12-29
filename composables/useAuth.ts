@@ -1,19 +1,6 @@
 import { ref, computed } from 'vue'
+import type {User, LoginResponse} from '../interfaces/user'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  initials: string
-}
-
-interface LoginResponse {
-  error: string | null
-  data: {
-    userId: string
-    token: string
-  }
-}
 
 const API_BASE_URL = 'https://mongo-api-2025.onrender.com'
 

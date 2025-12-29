@@ -7,37 +7,26 @@ import type {
   MonthlyAggregatedData,
   CalendarFilters,
   DataType
-} from '~/types/calendar'
+} from '../interfaces/calendar'
 
 export const useCalendarData = () => {
   const calendarData = ref<LawyerCalendarData | null>(null)
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
+  const { apiRequest } = useApi()
 
   /**
-   * Fetch calendar data by lawyer initials
-   * @param {string} initials 
+   * Fetch calendar data for authenticated user
    * @param {CalendarFilters} filters
    */
-  const fetchCalendarData = async (initials: string, filters?: CalendarFilters): Promise<void> => {
+  const fetchCalendarData = async (filters?: CalendarFilters): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
-      const config = useRuntimeConfig()
-         
-      const url =  
-         `${config.public.apiBase}/api/daily-data/2024`
-
-      console.log('Fetching calendar data from:', url)
+      console.log('Fetching calendar data for authenticated user')
       
-      const response = await fetch(url)
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch calendar data: ${response.status} ${response.statusText}`)
-      }
-
-      const data: LawyerCalendarData = await response.json()
+      const data = await apiRequest<LawyerCalendarData>('/api/daily-data/me')
       
       calendarData.value = data
       
@@ -59,8 +48,32 @@ export const useCalendarData = () => {
   }
 
   /**
+   * Fetch calendar data for a specific year
+   * @param {number} year
+   */
+  const fetchCalendarDataByYear = async (year: number): Promise<void> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      console.log(`Fetching calendar data for year ${year}`)
+      
+      const data = await apiRequest<LawyerCalendarData>(`/api/daily-data/${year}`)
+      
+      calendarData.value = data
+      
+      console.log(`Loaded calendar data for ${year}:`, calendarData.value)
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Unknown error occurred'
+      console.error('Error fetching calendar data:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
    * Get calendar data for a specific year
-   * @param {number} year - 
+   * @param {number} year
    */
   const getYearData = (year: number): YearData | null => {
     if (!calendarData.value?.years) {
@@ -102,7 +115,7 @@ export const useCalendarData = () => {
 
   /**
    * Get statistics for a specific year
-   * @param {number} year - 
+   * @param {number} year
    */
   const getYearStatistics = (year: number): YearStatistics | null => {
     const yearData = getYearData(year)
@@ -169,6 +182,7 @@ export const useCalendarData = () => {
     loading,
     error,
     fetchCalendarData,
+    fetchCalendarDataByYear,
     getYearData,
     getFormattedCalendarData,
     availableYears,
