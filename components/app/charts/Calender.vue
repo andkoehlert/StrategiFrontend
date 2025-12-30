@@ -239,6 +239,54 @@ const dataTypeLabel = computed(() => {
   return labels[selectedDataType.value] || 'Værdi'
 })
 
+// Helper function to format currency
+const formatCurrency = (value) => {
+  if (!value) return '0 kr'
+  return `${Math.round(value).toLocaleString('da-DK')} kr`
+}
+
+// Format currency helper for statistics
+const formatCurrencyCompact = (value) => {
+  if (!value) return '0 kr'
+  const formatted = Math.round(value).toLocaleString('da-DK')
+  return `${formatted} kr`
+}
+
+// Helper functions for labels
+const getStatusLabel = (value) => {
+  const labels = {
+    'aktiv': 'Aktiv',
+    'under-behandling': 'Under behandling',
+    'venter-modpart': 'Venter på modpart',
+    'venter-klient': 'Venter på klient',
+    'afsluttes-snart': 'Afsluttes snart'
+  }
+  return labels[value] || value
+}
+
+const getWorkTypeLabel = (value) => {
+  const labels = {
+    'klientmøder': 'Klientmøder',
+    'retsmøder': 'Retsmøder',
+    'interne-møder': 'Interne møder',
+    'forberedelsesmøder': 'Forberedelsesmøder'
+  }
+  return labels[value] || value
+}
+
+const getIndustryLabel = (value) => {
+  const labels = {
+    'almene-boligsaelskaber': 'Almene boligsælskaber',
+    'offentlige-myndigheder': 'Offentlige myndigheder',
+    'private-ejendomsudviklere': 'Private ejendomsudviklere',
+    'private-ejendomsinvestorer': 'Private ejendomsinvestorer',
+    'kapital-fonde': 'Kapital fonde',
+    'pensionskasser': 'Pensionskasser',
+    'asset-managers': 'Asset managers'
+  }
+  return labels[value] || value
+}
+
 // Initialize chart
 const initChart = () => {
   if (!chartContainer.value) return
@@ -255,6 +303,17 @@ const initChart = () => {
 const updateChart = () => {
   if (!chartInstance) return
   
+  // Store yearData in a variable that the tooltip can access
+  const yearData = calendarData.value?.years.find(y => y.year === selectedYear.value)
+  const dailyDataMap = new Map()
+  
+  // e a map for faster lookup
+  if (yearData?.dailyData) {
+    yearData.dailyData.forEach(day => {
+      dailyDataMap.set(day.date, day)
+    })
+  }
+  
   const option = {
     tooltip: {
       formatter: function (params) {
@@ -268,11 +327,10 @@ const updateChart = () => {
           formattedValue = formatCurrency(value)
         }
         
-        // Find the daily data for this date to show additional info
-        const yearData = calendarData.value?.years.find(y => y.year === selectedYear.value)
-        const dayData = yearData?.dailyData.find(d => d.date === dateStr)
+        // Get day data from the map
+        const dayData = dailyDataMap.get(dateStr)
         
-        let tooltipContent = `${dateStr}<br/>${dataTypeLabel.value}: ${formattedValue}`
+        let tooltipContent = `<strong>${dateStr}</strong><br/>${dataTypeLabel.value}: ${formattedValue}`
         
         if (dayData) {
           tooltipContent += `<br/><br/><strong>Detaljer:</strong>`
@@ -300,13 +358,13 @@ const updateChart = () => {
       orient: 'horizontal',
       left: 'center',
       top: 10,
- pieces: [
-  { min: maxValue.value * 0.8, label: 'Meget høj', color: '#CFAE76' },  
-  { min: maxValue.value * 0.6, max: maxValue.value * 0.8, label: 'Høj', color: '#36a8ff' },
-  { min: maxValue.value * 0.4, max: maxValue.value * 0.6, label: 'Medium', color: '#1f80d0' },
-  { min: maxValue.value * 0.2, max: maxValue.value * 0.4, label: 'Lav', color: '#145d9c' },
-  { max: maxValue.value * 0.2, label: 'Meget lav', color: '#0d3a5c' }    
-],
+      pieces: [
+        { min: maxValue.value * 0.8, label: 'Meget høj', color: '#CFAE76' },  
+        { min: maxValue.value * 0.6, max: maxValue.value * 0.8, label: 'Høj', color: '#36a8ff' },
+        { min: maxValue.value * 0.4, max: maxValue.value * 0.6, label: 'Medium', color: '#1f80d0' },
+        { min: maxValue.value * 0.2, max: maxValue.value * 0.4, label: 'Lav', color: '#145d9c' },
+        { max: maxValue.value * 0.2, label: 'Meget lav', color: '#0d3a5c' }    
+      ],
       textStyle: {
         color: '#fff'
       }
@@ -355,41 +413,6 @@ const updateChart = () => {
   chartInstance.setOption(option, true)
 }
 
-// Helper functions for labels
-const getStatusLabel = (value) => {
-  const labels = {
-    'aktiv': 'Aktiv',
-    'under-behandling': 'Under behandling',
-    'venter-modpart': 'Venter på modpart',
-    'venter-klient': 'Venter på klient',
-    'afsluttes-snart': 'Afsluttes snart'
-  }
-  return labels[value] || value
-}
-
-const getWorkTypeLabel = (value) => {
-  const labels = {
-    'klientmøder': 'Klientmøder',
-    'retsmøder': 'Retsmøder',
-    'interne-møder': 'Interne møder',
-    'forberedelsesmøder': 'Forberedelsesmøder'
-  }
-  return labels[value] || value
-}
-
-const getIndustryLabel = (value) => {
-  const labels = {
-    'almene-boligsaelskaber': 'Almene boligsælskaber',
-    'offentlige-myndigheder': 'Offentlige myndigheder',
-    'private-ejendomsudviklere': 'Private ejendomsudviklere',
-    'private-ejendomsinvestorer': 'Private ejendomsinvestorer',
-    'kapital-fonde': 'Kapital fonde',
-    'pensionskasser': 'Pensionskasser',
-    'asset-managers': 'Asset managers'
-  }
-  return labels[value] || value
-}
-
 // Handle filter changes
 const handleRadioFilter = (filter) => {
   radioFilter.value = filter
@@ -408,13 +431,6 @@ const handleAdvancedFilter = (filters) => {
     balance: filters.balance,
     industry: filters.industry
   }
-}
-
-// Format currency helper
-const formatCurrencyCompact = (value) => {
-  if (!value) return '0 kr'
-  const formatted = Math.round(value).toLocaleString('da-DK')
-  return `${formatted} kr`
 }
 
 // Watch for data changes
@@ -471,3 +487,9 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.gold-text {
+  color: #CFAE76;
+}
+</style>
