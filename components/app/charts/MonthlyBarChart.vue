@@ -7,7 +7,7 @@
         :class="mode === 'month' ? activeBtn : inactiveBtn"
         @click="mode = 'month'"
       >
-        Monthly
+        Måneder
       </button>
 
       <button
@@ -15,7 +15,7 @@
         :class="mode === 'quarter' ? activeBtn : inactiveBtn"
         @click="mode = 'quarter'"
       >
-        Quarterly
+        Kvatal
       </button>
     </div>
 
@@ -42,9 +42,7 @@ import ECharts from '~/components/app/charts/ECharts.vue'
 import type { ProcessedMonthlyData } from '~/interfaces/monthly'
 import type { ProcessedYearData } from '~/interfaces/quarterly'
 
-/* ----------------------------------
-   Props
----------------------------------- */
+
 interface Props {
   monthlyData: ProcessedMonthlyData | null
   yearData: ProcessedYearData | null
@@ -53,22 +51,16 @@ interface Props {
 
 const props = defineProps<Props>()
 
-/* ----------------------------------
-   Toggle state
----------------------------------- */
+
 const mode = ref<'month' | 'quarter'>('month')
 
-/* ----------------------------------
-   Button styles
----------------------------------- */
+
 const activeBtn =
   'bg-[#f0cb8b] text-black font-semibold shadow'
 const inactiveBtn =
   'bg-[#175381] text-white opacity-70 hover:opacity-100'
 
-/* ----------------------------------
-   MONTHLY (Bar chart)
----------------------------------- */
+
 const monthlyOption = computed(() => {
   if (!props.monthlyData?.months?.length) return null
 
@@ -81,7 +73,7 @@ const monthlyOption = computed(() => {
     animationDuration: 600,
 
     title: {
-      text: `Monthly – ${props.year}`,
+      text: `Måned – ${props.year}`,
       left: 'center',
       textStyle: {
         color: '#fff',
@@ -156,9 +148,7 @@ const monthlyOption = computed(() => {
   }
 })
 
-/* ----------------------------------
-   QUARTERLY (Pie chart)
----------------------------------- */
+
 const quarterlyOption = computed(() => {
   if (!props.yearData?.quarterly) return null
 
@@ -172,7 +162,7 @@ const quarterlyOption = computed(() => {
     animationDuration: 600,
 
     title: {
-      text: `Quarterly – ${props.year}`,
+      text: `Kvatal – ${props.year}`,
       left: 'center',
       textStyle: {
         color: '#fff',
@@ -241,9 +231,7 @@ const quarterlyOption = computed(() => {
   }
 })
 
-/* ----------------------------------
-   ACTIVE OPTION
----------------------------------- */
+
 const chartOption = computed(() =>
   mode.value === 'month'
     ? monthlyOption.value

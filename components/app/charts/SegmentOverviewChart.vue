@@ -64,7 +64,6 @@
       <!--  Insights -->
       <div class="bg-gradient-to-r from-blue-900/40 to-blue-800/40 p-10 rounded-lg border border-blue-700/30">
         <div class="flex items-start space-x-3">
-          <div class="text-2xl">💡</div>
           <div class="flex-1">
             <h4 class="text-white font-semibold mb-2">Indsigter</h4>
             <div class="space-y-4 text-sm text-gray-300">

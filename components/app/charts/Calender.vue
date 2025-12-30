@@ -19,25 +19,88 @@
           @Nyfilter="handleAdvancedFilter"
         />
         
-        <!-- Statistics Summary -->
-        <div v-if="yearStatistics" class="grid  grid-cols-4 mt-4  gap-4 mb-6 p-6 bg-[#0d3a5c]/50 rounded-lg">
-          <div class="text-center">
-            <p class="text-gray-300 text-xs mb-1">Total afregnet</p>
-            <p class="text-white font-semibold">{{ formatCurrency(yearStatistics.totalSettled) }}</p>
-          </div>
-          <div class="text-center">
-            <p class="text-gray-300 text-xs mb-1">Total sagsværdi</p>
-            <p class="text-white font-semibold">{{ formatCurrency(yearStatistics.totalCaseValue) }}</p>
-          </div>
-          <div class="text-center">
-            <p class="text-gray-300 text-xs mb-1">Antal sager</p>
-            <p class="text-white font-semibold">{{ yearStatistics.totalCases }}</p>
-          </div>
-          <div class="text-center">
-            <p class="text-gray-300 text-xs mb-1">Dage vist</p>
-            <p class="text-white font-semibold">{{ getHeatmapData.length }}</p>
-          </div>
-        </div>
+       <!-- Statistics  -->
+<div v-if="yearStatistics" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-6">
+  <!-- Total  -->
+  <div class="relative overflow-hidden rounded-xl p-4 group">
+    <!-- Glass  -->
+    <div class="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    <!-- Content -->
+    <div class="relative flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-green-500/20 backdrop-blur-sm border border-green-400/20">
+        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white text-xs font-medium mb-1">Total afregnet</h3>
+        <p class="gold-text text-xl font-bold">{{ formatCurrencyCompact(yearStatistics.totalSettled) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Case Value -->
+  <div class="relative overflow-hidden rounded-xl p-4 group">
+    <!-- Glass effect  -->
+    <div class="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    <!-- Content -->
+    <div class="relative flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-500/20 backdrop-blur-sm border border-blue-400/20">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white text-xs font-medium mb-1">Total sagsværdi</h3>
+        <p class="gold-text text-xl font-bold">{{ formatCurrencyCompact(yearStatistics.totalCaseValue) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Number of Cases -->
+  <div class="relative overflow-hidden rounded-xl p-4 group">
+    <!-- Glass effect  -->
+    <div class="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    <!-- Content -->
+    <div class="relative flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-purple-500/20 backdrop-blur-sm border border-purple-400/20">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white text-xs font-medium mb-1">Antal sager</h3>
+        <p class="gold-text text-xl font-bold">{{ yearStatistics.totalCases }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Days  -->
+  <div class="relative overflow-hidden rounded-xl p-4 group">
+    <!-- Glass effect  -->
+    <div class="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    <!-- Content -->
+    <div class="relative flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-yellow-500/20 backdrop-blur-sm border border-yellow-400/20">
+        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white text-xs font-medium mb-1">Dage vist</h3>
+        <p class="gold-text text-xl font-bold">{{ getHeatmapData.length }}</p>
+      </div>
+    </div>
+  </div>
+</div>
         
         <!-- ECharts Heatmap Container -->
         <div 
@@ -332,7 +395,7 @@ const handleRadioFilter = (filter) => {
   radioFilter.value = filter
 }
 
-// Handle advanced filter changes from FilterPanel
+// Handle  filter changes from FilterPanel
 const handleAdvancedFilter = (filters) => {
   console.log('Advanced filters applied:', filters)
   
@@ -348,9 +411,10 @@ const handleAdvancedFilter = (filters) => {
 }
 
 // Format currency helper
-const formatCurrency = (value) => {
+const formatCurrencyCompact = (value) => {
   if (!value) return '0 kr'
-  return `${Math.round(value).toLocaleString()} kr`
+  const formatted = Math.round(value).toLocaleString('da-DK')
+  return `${formatted} kr`
 }
 
 // Watch for data changes

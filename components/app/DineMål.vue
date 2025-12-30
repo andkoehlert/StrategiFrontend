@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gradient-to-r from-[#002847] to-[#003d5c] rounded-2xl overflow-hidden shadow-xl">
     <!-- Header Section -->
-    <div class="p-4 flex items-center justify-between border-b border-white/10">
+<div class="pl-5 pt-3  flex items-center justify-between">
       <div class="flex items-center gap-2">
         <h3 class="text-white text-xl font-bold">Dine mål for</h3>
       <div class="relative">
@@ -34,7 +34,7 @@
     </option>
   </select>
 
-  <!-- Custom arrow -->
+  <!--  arrow -->
   <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
     <svg
       class="w-4 h-4 text-yellow-400"
@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <!-- Metrics Grid -->
+    <!--  Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 p-5">
       <!-- Total Goals -->
       <div class="bg-gradient-to-br from-[#175381]/40 to-[#175381]/20 rounded-lg p-4 hover:from-[#175381]/50 hover:to-[#175381]/30 transition-all duration-300 border border-white/5">
@@ -87,7 +87,7 @@
         </div>
       </div>
 
-      <!--  Time Registration -->
+      <!--   Registration -->
       <div class="bg-gradient-to-br from-[#175381]/40 to-[#175381]/20 rounded-lg p-4 hover:from-[#175381]/50 hover:to-[#175381]/30 transition-all duration-300 border border-white/5">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-yellow-500/20">

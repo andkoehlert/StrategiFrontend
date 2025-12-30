@@ -34,8 +34,8 @@ const chartOption = computed(() => {
   
   return {
     title: {
-      text: `Actual vs Goals ${props.year}`,
-      subtext: `${percentage}% of goal achieved`,
+      text: `Performance vs mål ${props.year}`,
+      subtext: `${percentage}% i mål`,
       textStyle: { 
         color: '#fff', 
         fontSize: 18, 
@@ -87,7 +87,7 @@ const chartOption = computed(() => {
         data: [
           { 
             value: actual, 
-            name: `Actual ${props.year}`,
+            name: `Performance ${props.year}`,
             itemStyle: { 
               color: '#f0cb8b',
               borderRadius: 5,
@@ -102,7 +102,7 @@ const chartOption = computed(() => {
           },
           { 
             value: remaining > 0 ? remaining : 0, 
-            name: remaining > 0 ? `Remaining` : 'Goal Exceeded!',
+            name: remaining > 0 ? `Dit mål` : 'Mål nået!',
             itemStyle: { 
               color: remaining > 0 ? '#cfae76' : '#91cc75',
               borderRadius: 5,
