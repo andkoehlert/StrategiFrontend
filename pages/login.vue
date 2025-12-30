@@ -5,6 +5,7 @@
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-white mb-2">Dit strategi dashboard</h1>
         <p class="text-gray-300 text-sm">Log ind med din email og adgangskode</p>
+        <p class="gold-text text-sm"><span class="uppercase">Opmærksom:</span> Login kan tage et stykke tid da backend skal starte op. </p>
       </div>
 
       <div v-if="error" class="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg">
